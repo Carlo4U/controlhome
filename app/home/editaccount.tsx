@@ -10,9 +10,7 @@ import { imageToBase64 } from '../../src/utils/imageUtils';
 import { styles } from '../../styles/editaccount.styles';
 
 export default function EditAccount() {
-  const { username, setUsername, email, setEmail, profileImage, setProfileImage } = useUser();
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const { username, setUsername, email, fullname, setFullname, profileImage, setProfileImage } = useUser();
   const [isLoading, setIsLoading] = useState(false);
 
   // Log the current email for debugging
@@ -82,14 +80,21 @@ export default function EditAccount() {
   };
 
   const handleSave = async () => {
-    // Validate password if needed
-    if (password && password !== confirmPassword) {
-      Alert.alert('Error', 'Passwords do not match');
-      return;
-    }
-
     try {
       setIsLoading(true);
+
+      // Validate inputs
+      if (!username.trim()) {
+        Alert.alert('Error', 'Username is required');
+        setIsLoading(false);
+        return;
+      }
+
+      if (!fullname.trim()) {
+        Alert.alert('Error', 'Full Name is required');
+        setIsLoading(false);
+        return;
+      }
 
       // Convert image to base64 if it exists and starts with file://
       let imageData = profileImage;
@@ -110,7 +115,7 @@ export default function EditAccount() {
       const result = await updateProfileByEmail({
         email, // Current email to find the user
         username,
-        password: password || undefined,
+        fullname, // Add fullname to the update
         image: imageData || undefined,
       });
 
@@ -170,36 +175,24 @@ export default function EditAccount() {
         </View>
 
         <View style={styles.formGroup}>
+          <Text style={styles.label}>Full Name</Text>
+          <TextInput
+            style={styles.input}
+            value={fullname}
+            onChangeText={setFullname}
+            placeholder="Enter your full name"
+          />
+        </View>
+
+        <View style={styles.formGroup}>
           <Text style={styles.label}>Email</Text>
           <TextInput
-            style={styles.input}
+            style={[styles.input, styles.disabledInput]}
             value={email}
-            onChangeText={setEmail}
-            placeholder="Enter email"
-            keyboardType="email-address"
+            editable={false}
+            placeholder="Your email address"
           />
-        </View>
-
-        <View style={styles.formGroup}>
-          <Text style={styles.label}>New Password</Text>
-          <TextInput
-            style={styles.input}
-            value={password}
-            onChangeText={setPassword}
-            placeholder="Enter new password"
-            secureTextEntry
-          />
-        </View>
-
-        <View style={styles.formGroup}>
-          <Text style={styles.label}>Confirm Password</Text>
-          <TextInput
-            style={styles.input}
-            value={confirmPassword}
-            onChangeText={setConfirmPassword}
-            placeholder="Confirm new password"
-            secureTextEntry
-          />
+          <Text style={styles.helperText}>Email cannot be changed</Text>
         </View>
 
         <TouchableOpacity

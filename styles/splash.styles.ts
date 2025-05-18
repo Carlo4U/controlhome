@@ -7,11 +7,8 @@ const { width, height } = Dimensions.get('window');
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#FFFFFF',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingTop: 10,
-    paddingBottom: 70,
-
   },
   background: {
     position: 'absolute',
@@ -22,20 +19,18 @@ export const styles = StyleSheet.create({
   logoContainer: {
     width: '100%',
     alignItems: 'center',
-    marginTop: 20,
+    marginTop: 1,
   },
   logoImage: {
     width: 80,
-    height: 40,
-    marginVertical: 2,
+    height: 80,
   },
   charactersContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
     width: '100%',
-    height: height * 0.5, // Make container taller
-    marginTop: 0,
+    height: height * 0.4, // Make container taller
   },
   characterImage: {
     height: 200,
@@ -45,14 +40,14 @@ export const styles = StyleSheet.create({
     width: '100%',
     paddingHorizontal: 40,
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 2,
   },
   welcomeText: {
     fontSize: 36,
     fontWeight: 'bold',
     textAlign: 'center',
-    color: '#000',
     fontFamily: fonts.Regular,
+    color: colors.primary,
     marginBottom: 10,
     lineHeight: 38,
   },
@@ -79,6 +74,7 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     borderWidth: 1,
     borderColor: colors.Secondary,
+    backgroundColor: colors.primary,
     marginTop: 20,
     height: 60,
     borderRadius: 100,

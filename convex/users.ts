@@ -7,8 +7,8 @@ export const createUser = mutation({
     email: v.string(),
     image: v.optional(v.string()),
     clerkId: v.string(),
-    password: v.optional(v.string()),
     fullname: v.optional(v.string()),
+    password: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const existingUser = await ctx.db
@@ -26,11 +26,22 @@ export const createUser = mutation({
       email: args.email,
       image: args.image,
       clerkId: args.clerkId,
-      password: args.password,
       fullname: args.fullname,
+      updatedAt: new Date().toISOString(),
+      password: args.password,
     });
 
-    return { id: userId };
+    // Create a profile for the user with required fields
+    const profileId = await ctx.db.insert("profile", {
+      userId: userId,
+      username: args.username,
+      email: args.email, // Ensure email is always set
+      image: args.image,
+      updatedAt: new Date().toISOString(),
+      password: args.password,
+    });
+
+    return { id: userId, profileId };
   }
 });
 
@@ -59,9 +70,9 @@ export const updateProfile = mutation({
   args: {
     fullname: v.optional(v.string()),
     image: v.optional(v.string()),
-    password: v.optional(v.string()),
     username: v.optional(v.string()),
     email: v.optional(v.string()),
+    password: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const currentUser = await getAuthenticatedUser(ctx);
@@ -71,18 +82,36 @@ export const updateProfile = mutation({
 
     // Update user fields if provided
     const userUpdates: Record<string, string> = {};
+    if (args.username) userUpdates.username = args.username; // Add username to user updates
     if (args.fullname) userUpdates.fullname = args.fullname;
+    if (args.image) userUpdates.image = args.image;
+    if (args.password) userUpdates.password = args.password;
+
+    // Always update the updatedAt timestamp
+    userUpdates.updatedAt = new Date().toISOString();
+
     if (Object.keys(userUpdates).length > 0) {
+      console.log('updateProfile: Updating user with fields:', userUpdates);
       await ctx.db.patch(currentUser._id, userUpdates);
+    } else {
+      console.log('updateProfile: No user fields to update');
     }
 
+    // Make sure we have the current user's email if not provided in args
+    // Use profileValidator to ensure type safety
     const updatedProfile = {
-      username: args.username || "",
-      email: args.email || "",
-      image: args.image || "",
-      password: args.password || "",
+      username: args.username || currentUser.username || "",
+      email: args.email || currentUser.email, // Use current user's email if not provided
+      image: args.image || currentUser.image || "",
       updatedAt: new Date().toISOString(),
+      password: args.password || currentUser.password,
     };
+
+    // Validate the profile data against the schema
+    if (!updatedProfile.username || !updatedProfile.email) {
+      console.error("Profile validation error: missing required fields");
+      throw new ConvexError("Username and email are required");
+    }
     const profile = await ctx.db
       .query("profile")
       .withIndex("by_userId", (q) => q.eq("userId", currentUser._id))
@@ -90,9 +119,11 @@ export const updateProfile = mutation({
 
     let profileDoc;
     if (profile) {
+      console.log('updateProfile: Updating existing profile with fields:', updatedProfile);
       await ctx.db.patch(profile._id, updatedProfile);
       profileDoc = await ctx.db.get(profile._id);
     } else {
+      console.log('updateProfile: Creating new profile with fields:', updatedProfile);
       const profileId = await ctx.db.insert("profile", {
         userId: currentUser._id,
         ...updatedProfile,
@@ -114,9 +145,9 @@ export const updateProfileByEmail = mutation({
     email: v.string(), // Required to find the user
     fullname: v.optional(v.string()),
     image: v.optional(v.string()),
-    password: v.optional(v.string()),
     username: v.optional(v.string()),
     newEmail: v.optional(v.string()), // In case they want to change their email
+    password: v.optional(v.string()), // Added password field
   },
   handler: async (ctx, args) => {
     console.log('updateProfileByEmail called with email:', args.email);
@@ -151,22 +182,47 @@ export const updateProfileByEmail = mutation({
 
     // Update user fields if provided
     const userUpdates: Record<string, string> = {};
+    if (args.username) userUpdates.username = args.username; // Add username to user updates
     if (args.fullname) userUpdates.fullname = args.fullname;
     if (args.newEmail) userUpdates.email = args.newEmail;
     if (args.image) userUpdates.image = args.image;
+    if (args.password) userUpdates.password = args.password;
+
+    // Always update the updatedAt timestamp
+    userUpdates.updatedAt = new Date().toISOString();
 
     if (Object.keys(userUpdates).length > 0) {
+      console.log('Updating user with fields:', userUpdates);
       await ctx.db.patch(user._id, userUpdates);
+    } else {
+      console.log('No user fields to update');
     }
 
     // Update or create profile
+    // Ensure we always have an email value
+    const emailToUse = args.newEmail || args.email;
+    if (!emailToUse) {
+      return {
+        success: false,
+        error: "Email is required for profile"
+      };
+    }
+
     const updatedProfile = {
       username: args.username || user.username || "",
-      email: args.newEmail || args.email,
+      email: emailToUse,
       image: args.image || user.image || "",
-      password: args.password || user.password || "",
       updatedAt: new Date().toISOString(),
+      password: args.password || user.password,
     };
+
+    // Validate the profile data
+    if (!updatedProfile.username || !updatedProfile.email) {
+      return {
+        success: false,
+        error: "Username and email are required"
+      };
+    }
 
     const profile = await ctx.db
       .query("profile")
@@ -175,9 +231,11 @@ export const updateProfileByEmail = mutation({
 
     let profileDoc;
     if (profile) {
+      console.log('Updating existing profile with fields:', updatedProfile);
       await ctx.db.patch(profile._id, updatedProfile);
       profileDoc = await ctx.db.get(profile._id);
     } else {
+      console.log('Creating new profile with fields:', updatedProfile);
       const profileId = await ctx.db.insert("profile", {
         userId: user._id,
         ...updatedProfile,
@@ -222,7 +280,6 @@ export const saveExpoPushToken = mutation({
 export const loginUser = query({
   args: {
     email: v.string(),
-    password: v.string(),
   },
   handler: async (ctx, args) => {
     // Find user by email
@@ -239,15 +296,8 @@ export const loginUser = query({
       };
     }
 
-    // In a real app, you would use a secure password comparison
-    // This is a simplified version for demonstration
-    if (user.password !== args.password) {
-      return {
-        success: false,
-        error: "Invalid password"
-      };
-    }
-
+    // With Clerk authentication, we don't need password verification
+    // Just return the user if found by email
     return {
       success: true,
       user: {

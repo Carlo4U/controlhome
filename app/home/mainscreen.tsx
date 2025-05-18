@@ -1,3 +1,4 @@
+import { useAuth } from '@clerk/clerk-expo';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import React, { useRef, useState } from 'react';
@@ -18,6 +19,7 @@ import { useUser } from '../../contexts/UserContext';
 import { styles } from '../../styles/mainscreen.styles';
 export default function MainScreen() {
   const { profileImage, username } = useUser();
+  const { signOut } = useAuth();
   console.log("Profile image in MainScreen:", profileImage);
   const [lightStates, setLightStates] = useState({
     'V1': false,
@@ -36,7 +38,7 @@ export default function MainScreen() {
     'V5': "Front Door Light",
     'V6': "Tree Light",
   });
-  
+
   const [modalVisible, setModalVisible] = useState(false);
   const [currentPin, setCurrentPin] = useState('');
   const [newLabel, setNewLabel] = useState('');
@@ -44,7 +46,7 @@ export default function MainScreen() {
   // Add state for drawer
   const [drawerVisible, setDrawerVisible] = useState(false);
   const slideAnim = useRef(new Animated.Value(-300)).current;
-  
+
   // Define toggleDrawer function
   const toggleDrawer = () => {
     if (drawerVisible) {
@@ -103,7 +105,7 @@ export default function MainScreen() {
 
     try {
       const response: Response = await fetch(url);
-      
+
       if (response.ok) {
         setLightStates((prevStates: LightState) => ({
           ...prevStates,
@@ -165,9 +167,15 @@ export default function MainScreen() {
   const handleLogout = async () => {
     try {
       toggleDrawer(); // Close drawer first
-      // For now, just navigate to login screen
-      router.replace('/auth');
+
+      // Sign out from Clerk before navigating
+      await signOut();
+
+      // Navigate to auth screen after successful sign out
+      // Use navigate instead of replace to avoid routing issues
+      router.navigate('/auth');
     } catch (error) {
+      console.error('Logout error:', error);
       Alert.alert('Error', 'Failed to log out');
     }
   };
@@ -194,9 +202,9 @@ export default function MainScreen() {
     return (
       <View key={pin} style={styles.lightSwitchContainer}>
         <View style={styles.lightIconContainer}>
-          <Ionicons 
-            name={lightStates[pin as keyof typeof lightStates] ? "bulb" : "bulb-outline"} 
-            size={24} 
+          <Ionicons
+            name={lightStates[pin as keyof typeof lightStates] ? "bulb" : "bulb-outline"}
+            size={24}
             color={lightStates[pin as keyof typeof lightStates] ? "#FFD700" : "#888"}
           />
         </View>
@@ -241,8 +249,8 @@ export default function MainScreen() {
         </View>
       </ScrollView>
 
-      <TouchableOpacity 
-        style={styles.helpButton} 
+      <TouchableOpacity
+        style={styles.helpButton}
         onPress={navigateToFAQ}
       >
         <Ionicons name="help-circle" size={28} color="#fff" />
@@ -265,14 +273,14 @@ export default function MainScreen() {
               autoFocus
             />
             <View style={styles.modalButtons}>
-              <TouchableOpacity 
-                style={[styles.modalButton, styles.cancelButton]} 
+              <TouchableOpacity
+                style={[styles.modalButton, styles.cancelButton]}
                 onPress={() => setModalVisible(false)}
               >
                 <Text style={styles.buttonText}>Cancel</Text>
               </TouchableOpacity>
-              <TouchableOpacity 
-                style={[styles.modalButton, styles.saveButton]} 
+              <TouchableOpacity
+                style={[styles.modalButton, styles.saveButton]}
                 onPress={saveNewLabel}
               >
                 <Text style={styles.buttonText}>Save</Text>
@@ -285,11 +293,11 @@ export default function MainScreen() {
       {/* Navigation Drawer */}
       {drawerVisible && (
         <View style={styles.drawerOverlay}>
-          <TouchableOpacity 
-            style={styles.drawerDismiss} 
+          <TouchableOpacity
+            style={styles.drawerDismiss}
             onPress={toggleDrawer}
           />
-          <Animated.View 
+          <Animated.View
             style={[
               styles.drawer,
               { transform: [{ translateX: slideAnim }] }
@@ -300,9 +308,9 @@ export default function MainScreen() {
               <View style={styles.profileSection}>
                 <View style={styles.profileImageContainer}>
                   {profileImage ? (
-                    <Image 
-                      source={{ uri: profileImage }} 
-                      style={styles.profileImage} 
+                    <Image
+                      source={{ uri: profileImage }}
+                      style={styles.profileImage}
                     />
                   ) : (
                     <Ionicons name="person" size={40} color="#fff" style={styles.profileIcon} />
@@ -314,7 +322,7 @@ export default function MainScreen() {
                 </View>
               </View>
             </View>
-            
+
             {/* Menu Items */}
             <ScrollView style={styles.drawerContent}>
               {/* FAQ Section */}
@@ -324,9 +332,9 @@ export default function MainScreen() {
                 </View>
                 <Text style={styles.drawerItemText}>FAQ</Text>
               </TouchableOpacity>
-              
+
               <View style={styles.divider} />
-              
+
               {/* Account Section */}
               <Text style={styles.sectionTitle}>Account</Text>
               <TouchableOpacity style={styles.drawerItem} onPress={navigateToEditAccount}>
@@ -335,9 +343,9 @@ export default function MainScreen() {
                 </View>
                 <Text style={styles.drawerItemText}>Edit Account</Text>
               </TouchableOpacity>
-              
+
               <View style={styles.divider} />
-              
+
               {/* About Us Section */}
               <Text style={styles.sectionTitle}>About us</Text>
               <TouchableOpacity style={styles.drawerItem} onPress={navigateToAboutUs}>
@@ -346,7 +354,7 @@ export default function MainScreen() {
                 </View>
                 <Text style={styles.drawerItemText}>About smart home</Text>
               </TouchableOpacity>
-              
+
               {/* Logout at the bottom */}
               <View style={styles.logoutContainer}>
                 <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>

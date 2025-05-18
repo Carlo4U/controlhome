@@ -3,8 +3,8 @@ import Constants from 'expo-constants';
 
 // Default values for development
 const defaultConfig = {
-  convexUrl: "https://eager-otter-724.convex.cloud",
-  clerkPublishableKey: "pk_test_ZWFnZXItb3R0ZXItNzI0LmNsZXJrLmFjY291bnRzLmRldiQ",
+  convexUrl: "https://beloved-newt-959.convex.cloud",
+  clerkPublishableKey: "pk_test_d2FybS1naXJhZmZlLTEwLmNsZXJrLmFjY291bnRzLmRldiQ",
 };
 
 // Get values from environment variables if available

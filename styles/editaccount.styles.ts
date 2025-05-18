@@ -89,6 +89,15 @@ export const styles = StyleSheet.create({
       fontSize: 16,
       backgroundColor: '#f9f9f9',
     },
+    disabledInput: {
+      backgroundColor: '#f0f0f0',
+      color: '#666',
+    },
+    helperText: {
+      fontSize: 12,
+      color: '#666',
+      marginTop: 4,
+    },
     saveButton: {
       backgroundColor: '#004d40',
       padding: 15,

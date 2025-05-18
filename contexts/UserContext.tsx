@@ -11,6 +11,8 @@ interface UserContextType {
   setEmail: (email: string) => void;
   profileImage: string | null;
   setProfileImage: (uri: string | null) => void;
+  fullname: string;
+  setFullname: (fullname: string) => void;
   userId: string | null;
   isLoading: boolean;
 }
@@ -23,6 +25,8 @@ const UserContext = createContext<UserContextType>({
   setEmail: () => {},
   profileImage: null,
   setProfileImage: () => {},
+  fullname: '',
+  setFullname: () => {},
   userId: null,
   isLoading: true,
 });
@@ -32,6 +36,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [username, setUsername] = useState('User');
   const [email, setEmail] = useState('user@example.com');
   const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [fullname, setFullname] = useState('');
   const [userId, setUserId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -49,6 +54,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       setUsername(userData.username || 'User');
       setEmail(userData.email || 'user@example.com');
       setProfileImage(userData.image || null);
+      setFullname(userData.fullname || '');
       setUserId(userData._id || null);
       setIsLoading(false);
     } else if (!isSignedIn) {
@@ -56,6 +62,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       setUsername('User');
       setEmail('user@example.com');
       setProfileImage(null);
+      setFullname('');
       setUserId(null);
       setIsLoading(false);
     }
@@ -70,6 +77,8 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         setEmail,
         profileImage,
         setProfileImage,
+        fullname,
+        setFullname,
         userId,
         isLoading,
       }}

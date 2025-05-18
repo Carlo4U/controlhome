@@ -1,170 +1,124 @@
 import { Dimensions, StyleSheet } from 'react-native';
 import { colors } from '../src/utils/colors';
-import { fonts } from '../src/utils/fonts';
 const { width, height } = Dimensions.get('window');
-
 
 export const styles = StyleSheet.create({
     container: {
-        flex: 1,
-        backgroundColor: colors.white,
-        padding: 20,
-        position: 'relative',
+      flex: 1,
+      backgroundColor: colors.white,
     },
-    backButtonWrapper: {
-        height: 38,
-        width: 38,
-        backgroundColor: colors.avocado,
-        borderRadius: 20,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginBottom: 20,
+    // Loading overlay styles
+    loadingOverlay: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: 'rgba(255, 255, 255, 0.9)',
+      justifyContent: 'center',
+      alignItems: 'center',
+      zIndex: 1000,
     },
-    textcontainer: {
-        marginBottom: 30,
+    loadingText: {
+      marginTop: 12,
+      fontSize: 16,
+      color: colors.primary,
+      fontWeight: '500',
     },
-    headingText: {
-        fontSize: 32,
-        color: colors.primary,
-        fontFamily: fonts.Bold,
-        fontWeight: 'bold',
-        lineHeight: 40,
+    brandSection: {
+      alignItems: "center",
+      marginTop: height * 0.1,
     },
-    loginnow: {
-        marginBottom: 30,
+    logoContainer: {
+      width: 60,
+      height: 60,
+      borderRadius: 18,
+      backgroundColor: "rgba(74, 222, 128, 0.15)",
+      justifyContent: "center",
+      alignItems: "center",
+      marginBottom: 20,
     },
-    subheadingText: {
-        fontSize: 16,
-        fontWeight: 'light',
-        textAlign: 'center',
-        color: '#000',
-        fontFamily: fonts.Regular,
+    logoImage: {
+      width: "50%",
+      height: "50%",
+      resizeMode: "contain",
     },
-    formContainer: {
-        flex: 1,
-        justifyContent: 'flex-start',
+    appName: {
+      fontSize: 42,
+      fontWeight: "bold",
+      color: colors.primary,
+      marginBottom: 1,
     },
-    inputContainer: {
-        borderWidth: 1,
-        borderColor: colors.Secondary,
-        borderRadius: 32,
-        paddingHorizontal: 20,
-        flexDirection: 'row',
-        alignItems: 'center',
-        padding: 2,
-        marginBottom: 15,
-        height: 50,
+    tagline: {
+      fontSize: 16,
+      color: colors.primary,
+      opacity: 0.6,
+      textAlign: "center",
     },
-    textInput: {
-        flex: 1,
-        paddingHorizontal: 10,
-        fontFamily: fonts.Light,
-        fontWeight: 'light',
+    illustrationContainer: {
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+      paddingHorizontal: 40,
     },
-    forgotPasswordText: {
-        textAlign: 'center',
-        color: colors.primary,
-        fontFamily: fonts.SemiBold,
-        fontWeight: 'bold',
-        marginTop: 5,
-        marginBottom: 20,
+    illustration: {
+      width: width * 0.75,
+      height: width * 0.75,
+      maxHeight: 280,
     },
-    loginButtonWrapper: {
-        backgroundColor: colors.primary,
-        borderRadius: 32,
-        marginBottom: 25,
+    loginSection: {
+      width: "100%",
+      paddingHorizontal: 24,
+      paddingBottom: 40,
+      alignItems: "center",
     },
-    loginText: {
-        color: colors.white,
-        fontSize: 18,
-        fontFamily: fonts.SemiBold,
-        fontWeight: 'bold',
-        textAlign: 'center',
-        padding: 12,
+    googleButton: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: colors.primary,
+      paddingVertical: 16,
+      paddingHorizontal: 24,
+      borderRadius: 14,
+      marginBottom: 20,
+      width: "100%",
+      maxWidth: 300,
+      shadowColor: "#000",
+      shadowOffset: {
+        width: 0,
+        height: 4,
+      },
+      shadowOpacity: 0.15,
+      shadowRadius: 12,
+      elevation: 5,
     },
-    continueText: {
-        textAlign: 'center',
-        marginBottom: 15,
-        fontFamily: fonts.Regular,
-        fontWeight: 'light',
-        color: colors.primary,
+    googleButtonDisabled: {
+      backgroundColor: '#7aa095', // Lighter shade of the primary color
+      opacity: 0.8,
     },
-    loginnButtonWrapper: {
-        flexDirection: 'row',
-        borderWidth: 2,
-        borderColor: colors.primary,
-        borderRadius: 100,
-        justifyContent: 'center',
-        alignItems: 'center',
-        padding: 7,
-        gap: 10,
-        marginBottom: 20,
+    buttonContent: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
     },
-    googleImage: {
-        height: 34,
-        width: 34,
-        justifyContent: 'center',
-        alignItems: 'center',
+    googleIconContainer: {
+      width: 24,
+      height: 24,
+      justifyContent: "center",
+      alignItems: "center",
+      marginRight: 12,
     },
-    googleText: {
-       fontSize: 18,
-       fontFamily: fonts.SemiBold,
-       fontWeight: 'bold',
-       justifyContent: 'center',
-       alignItems: 'center',
+    googleButtonText: {
+      fontSize: 16,
+      fontWeight: "600",
+      color: colors.white,
+      marginLeft: 8,
     },
-    accountText: {
-        color: colors.primary,
-        fontFamily: fonts.Regular,
-        fontWeight: 'light',
-        fontSize: 15,
-    },
-    footerTextContainer: {
-        flexDirection: 'row',
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginTop: 'auto',
-        marginBottom: 20,
-        gap: 5,
-    },
-    signupText: {
-        color: colors.primary,
-        fontFamily: fonts.Bold,
-        fontWeight: 'bold',
-        fontSize: 15,
-    },
-    buttonContainer: {
-        width: '100%',
-        flexDirection: 'row',
-        borderWidth: 1,
-        borderColor: colors.Secondary,
-        marginTop: 20,
-        height: 60,
-        borderRadius: 100,
-        justifyContent: 'center',
-        alignSelf: 'center',
-        marginBottom: 20,
-        overflow: 'hidden', // This ensures the animation stays within the container
-        position: 'relative', // Add position relative for proper child positioning
-    },
-    authButtonWrapper: {
-        justifyContent: 'center',
-        alignItems: 'center',
-        width: '50%',
-        height: '100%', // Ensure full height
-        borderRadius: 0, // Remove individual border radius
-        position: 'relative', // Ensure proper positioning
-        zIndex: 1, // Ensure text is above background
-    },
-    loginButtonText: {
-        color: colors.white,
-        fontSize: 18,
-        fontFamily: fonts.SemiBold,
-        fontWeight: 'bold',
-    },
-    signupButtonText: {
-        fontSize: 18,
-        fontFamily: fonts.SemiBold,
-        fontWeight: 'bold',
+    termsText: {
+      textAlign: "center",
+      fontSize: 12,
+      color: colors.Secondary,
+      maxWidth: 280,
     },
 });
+

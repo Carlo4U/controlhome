@@ -3,21 +3,22 @@ import React, { useState } from 'react';
 import { Image, Text, TouchableOpacity, View } from 'react-native';
 import { colors } from '../../src/utils/colors';
 import { styles } from '../../styles/splash.styles';
+
 export default function Index() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('login');
 
   const handleLogin = () => {
-    setActiveTab('login');
+    setActiveTab('signin');
     // Fix the route path to match file structure
     router.push("/auth/login");
   };
 
-  const handleSignup = () => {
+  {/*const handleSignup = () => {
     setActiveTab('signup');
     // Fix the route path to match file structure
     router.push("/auth/signup");
-  };
+  };*/}
 
   return (
     <View style={styles.container}>
@@ -27,7 +28,7 @@ export default function Index() {
 
       <View style={styles.logoContainer}>
         <Image
-          source={require('../../assets/splash/logo1.png')}
+          source={require('@/assets/images/ctrl-logoo.png')}
           style={styles.logoImage}
           resizeMode="contain"
         />
@@ -50,7 +51,7 @@ export default function Index() {
       <View style={styles.textContainer}>
         <Text style={styles.welcomeText}>Welcome{'\n'}Home!</Text>
         <Text style={styles.subtitleText}>Click the button below to start your{'\n'}</Text>
-        <Text style={styles.subtitleText2}>Smart Home</Text>
+        <Text style={styles.subtitleText2}>CTRLHOME</Text>
       </View>
 
 
@@ -58,7 +59,7 @@ export default function Index() {
         <TouchableOpacity
           style={[
             styles.loginButtonWrapper,
-            { backgroundColor: activeTab === 'login' ? colors.primary : 'transparent' },
+            { backgroundColor: activeTab === 'start' ? colors.primary : 'transparent' },
           ]}
           onPress={handleLogin}
         >

@@ -18,7 +18,7 @@ import {
 import { useUser } from '../../contexts/UserContext';
 import { styles } from '../../styles/mainscreen.styles';
 export default function MainScreen() {
-  const { profileImage, username } = useUser();
+  const { profileImage, username, email } = useUser();
   const { signOut } = useAuth();
   console.log("Profile image in MainScreen:", profileImage);
   const [lightStates, setLightStates] = useState({
@@ -318,7 +318,7 @@ export default function MainScreen() {
                 </View>
                 <View style={styles.profileTextContainer}>
                   <Text style={styles.profileName}>{username}</Text>
-                  <Text style={styles.profileEmail}>username</Text>
+                  <Text style={styles.profileEmail}>{email}</Text>
                 </View>
               </View>
             </View>

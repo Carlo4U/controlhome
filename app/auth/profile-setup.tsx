@@ -31,11 +31,28 @@ export default function ProfileSetup() {
   useEffect(() => {
     const checkProfile = async () => {
       try {
-        if (userData) {
-          // If user has already set up their profile (has username and image), redirect to main screen
-          if (userData.username && userData.image) {
-            router.replace('/home/mainscreen');
-          } else {
+        // If not signed in, redirect to login
+        if (!isSignedIn) {
+          console.log("Not signed in, redirecting to login");
+          setIsInitialLoading(false);
+          setTimeout(() => {
+            router.replace('/auth/login');
+          }, 500);
+          return;
+        }
+
+        // If we have user data from Convex
+        if (userData !== undefined) {
+          console.log("User data loaded:", userData ? "found" : "not found");
+
+          // If user exists and has already set up their profile (has username and image), redirect to main screen
+          if (userData && userData.username && userData.image) {
+            console.log("Profile complete, redirecting to main screen");
+            setTimeout(() => {
+              router.replace('/home/mainscreen');
+            }, 500);
+          } else if (userData) {
+            console.log("Profile incomplete, staying on setup page");
             // Pre-fill form with any existing data
             if (userData.username) setUsername(userData.username);
             if (userData.email) setEmail(userData.email);
@@ -44,15 +61,23 @@ export default function ProfileSetup() {
 
             // Determine if this is a new user (no username or image yet)
             setIsNewUser(!userData.username || !userData.image);
+          } else {
+            // userData is null but defined - user doesn't exist in Convex yet
+            console.log("User not found in Convex database");
+            // Keep default values from UserContext
           }
+
           setIsInitialLoading(false);
-        } else if (!isSignedIn) {
-          // If not signed in, redirect to login
-          router.replace('/auth/login');
         }
+        // If userData is undefined, we're still waiting for the query to complete
       } catch (error) {
         console.error('Error checking profile:', error);
         setIsInitialLoading(false);
+        Alert.alert(
+          "Error Loading Profile",
+          "There was a problem loading your profile. Please try again.",
+          [{ text: "OK" }]
+        );
       }
     };
 
@@ -131,13 +156,21 @@ export default function ProfileSetup() {
       return;
     }
 
+    // Validate email
+    if (!email || !email.includes('@')) {
+      Alert.alert('Error', 'A valid email address is required');
+      return;
+    }
+
     try {
       setIsLoading(true);
+      console.log('Saving profile data...');
 
       // Convert image to base64 if it exists and starts with file://
       let imageData = profileImage;
       if (profileImage && profileImage.startsWith('file://')) {
         try {
+          console.log('Converting image to base64...');
           imageData = await imageToBase64(profileImage);
           console.log('Image converted to base64 successfully');
         } catch (imageError) {
@@ -145,8 +178,13 @@ export default function ProfileSetup() {
           Alert.alert('Warning', 'There was an issue processing your profile image. Other changes will still be saved.');
           imageData = null;
         }
+      } else if (!profileImage) {
+        // If no profile image is set, use a default placeholder
+        console.log('No profile image selected, using default');
+        // You could set a default image here if needed
       }
 
+      console.log('Updating profile in Convex...');
       // Update profile in Convex database
       await updateProfile({
         username,
@@ -155,11 +193,20 @@ export default function ProfileSetup() {
         email, // Make sure email is saved
       });
 
-      // Navigate to main screen
-      router.replace('/home/mainscreen');
+      console.log('Profile updated successfully, navigating to main screen');
+
+      // Add a small delay before navigation to ensure state is updated
+      setTimeout(() => {
+        // Navigate to main screen
+        router.replace('/home/mainscreen');
+      }, 500);
     } catch (error) {
       console.error('Error saving profile:', error);
-      Alert.alert('Error', 'Failed to save profile. Please try again.');
+      Alert.alert(
+        'Error',
+        'Failed to save profile. Please check your connection and try again.',
+        [{ text: 'OK' }]
+      );
     } finally {
       setIsLoading(false);
     }

@@ -65,4 +65,43 @@ export const styles = StyleSheet.create({
       lineHeight: 20,
       color: '#555',
     },
+    questionInputContainer: {
+      marginTop: 20,
+      marginBottom: 10,
+    },
+    questionInputLabel: {
+      fontSize: 16,
+      fontWeight: 'bold',
+      marginBottom: 8,
+      color: '#333',
+    },
+    questionInput: {
+      borderWidth: 1,
+      borderColor: '#ddd',
+      borderRadius: 8,
+      padding: 12,
+      fontSize: 14,
+      backgroundColor: '#f9f9f9',
+      color: '#333',
+      textAlignVertical: 'top',
+      minHeight: 100,
+    },
+    sendButton: {
+      backgroundColor: '#004d40',
+      borderRadius: 8,
+      padding: 12,
+      alignItems: 'center',
+      marginTop: 10,
+    },
+    sendButtonText: {
+      color: '#fff',
+      fontSize: 16,
+      fontWeight: 'bold',
+    },
+    successMessage: {
+      color: '#4CAF50',
+      fontSize: 14,
+      marginTop: 8,
+      textAlign: 'center',
+    },
   });

@@ -14,10 +14,10 @@ export const styles = StyleSheet.create({
       left: 0,
       right: 0,
       bottom: 0,
-      backgroundColor: 'rgba(255, 255, 255, 0.9)',
+      backgroundColor: '#FFFFFF', // Solid white background to prevent seeing unmatched routes
       justifyContent: 'center',
       alignItems: 'center',
-      zIndex: 1000,
+      zIndex: 99999, // Higher z-index to ensure it's on top of everything
     },
     loadingText: {
       marginTop: 12,
@@ -119,6 +119,25 @@ export const styles = StyleSheet.create({
       fontSize: 12,
       color: colors.Secondary,
       maxWidth: 280,
+    },
+    authCancelledContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: 'rgba(255, 235, 235, 0.8)',
+      paddingVertical: 10,
+      paddingHorizontal: 16,
+      borderRadius: 8,
+      marginBottom: 16,
+      width: '90%',
+      alignSelf: 'center',
+      borderWidth: 1,
+      borderColor: 'rgba(255, 0, 0, 0.2)',
+    },
+    authCancelledText: {
+      marginLeft: 8,
+      fontSize: 14,
+      color: colors.primary,
+      fontWeight: '500',
     },
 });
 

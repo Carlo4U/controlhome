@@ -50,23 +50,40 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   );
 
   useEffect(() => {
-    if (userData) {
-      setUsername(userData.username || 'User');
-      setEmail(userData.email || 'user@example.com');
-      setProfileImage(userData.image || null);
-      setFullname(userData.fullname || '');
-      setUserId(userData._id || null);
+    console.log("UserContext: Auth state changed", { isSignedIn, clerkUserId, userData: userData !== undefined ? "loaded" : "loading" });
+
+    // If userData is defined (query has completed)
+    if (userData !== undefined) {
+      if (userData) {
+        // User exists in Convex
+        console.log("UserContext: User data loaded from Convex");
+        setUsername(userData.username || 'User');
+        setEmail(userData.email || 'user@example.com');
+        setProfileImage(userData.image || null);
+        setFullname(userData.fullname || '');
+        setUserId(userData._id || null);
+      } else {
+        // User doesn't exist in Convex yet (null result)
+        console.log("UserContext: User not found in Convex");
+        // Keep default values but update email if available from Clerk
+        // This will be the case for new users
+      }
       setIsLoading(false);
     } else if (!isSignedIn) {
       // Reset to defaults if not signed in
+      console.log("UserContext: User not signed in, using defaults");
       setUsername('User');
       setEmail('user@example.com');
       setProfileImage(null);
       setFullname('');
       setUserId(null);
       setIsLoading(false);
+    } else {
+      // User is signed in but userData is still loading
+      console.log("UserContext: Waiting for user data to load");
+      // Keep isLoading true
     }
-  }, [userData, isSignedIn]);
+  }, [userData, isSignedIn, clerkUserId]);
 
   return (
     <UserContext.Provider

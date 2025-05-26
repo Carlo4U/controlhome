@@ -9,6 +9,7 @@ export const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FFFFFF',
     alignItems: 'center',
+    paddingTop: 70,
   },
   background: {
     position: 'absolute',
@@ -73,11 +74,11 @@ export const styles = StyleSheet.create({
     width: '80%',
     flexDirection: 'row',
     borderWidth: 1,
-    borderColor: colors.Secondary,
+    borderColor: colors.primary,
     backgroundColor: colors.primary,
     marginTop: 20,
     height: 60,
-    borderRadius: 100,
+    borderRadius: 20,
   },
   loginButtonWrapper:{
     justifyContent: 'center',
@@ -87,11 +88,6 @@ export const styles = StyleSheet.create({
   },
   loginButtonText: {
     color: colors.white,
-    fontSize: 18,
-    fontFamily: fonts.SemiBold,
-    fontWeight: 'bold',
-  },
-  signupButtonText: {
     fontSize: 18,
     fontFamily: fonts.SemiBold,
     fontWeight: 'bold',

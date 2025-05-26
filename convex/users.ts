@@ -1,5 +1,41 @@
 import { ConvexError, v } from "convex/values";
-import { mutation, MutationCtx, query, QueryCtx } from "./_generated/server";
+import { api } from "./_generated/api";
+import { action, mutation, MutationCtx, query, QueryCtx } from "./_generated/server";
+
+import { Id } from "./_generated/dataModel";
+
+// Define User interface
+interface User {
+  _id: Id<"users">;
+  username: string;
+  email: string;
+  image?: string;
+  clerkId: string;
+  fullname?: string;
+  expoPushToken?: string;
+  updatedAt?: string;
+  password?: string;
+  emailOTP?: string;
+  otpExpiryTime?: number;
+  isEmailVerified?: boolean;
+}
+
+
+
+
+// Helper to generate OTP
+function generateOTP(): string {
+  // Generate a secure 6-digit OTP
+  const otp = Array.from({ length: 6 }, () =>
+    Math.floor(Math.random() * 10)
+  ).join("");
+  console.log("Generated new OTP:", { otp });
+  return otp;
+}
+
+
+
+
 
 export const createUser = mutation({
   args: {
@@ -310,7 +346,7 @@ export const loginUser = query({
   },
 });
 
-export async function getAuthenticatedUser(ctx: QueryCtx | MutationCtx) {
+export async function getAuthenticatedUser(ctx: QueryCtx | MutationCtx): Promise<User> {
   const identity = await ctx.auth.getUserIdentity();
 
   if (!identity) {
@@ -326,5 +362,365 @@ export async function getAuthenticatedUser(ctx: QueryCtx | MutationCtx) {
     throw new ConvexError("User not found. Please complete registration.");
   }
 
-  return currentUser;
+  return {
+    ...currentUser,
+    isEmailVerified: currentUser.isEmailVerified ?? false,
+    subscription: currentUser.subscription ?? "inactive",
+    hasSeenSubscriptionPrompt: currentUser.hasSeenSubscriptionPrompt ?? false,
+  } as User;
 }
+interface SendEmailOTPResult {
+  success: boolean;
+  message: string;
+  details?: any;
+}
+
+// Convert sendEmailOTP to an action since it needs to call another action
+export const sendEmailOTP = action({
+  args: { clerkId: v.string() },
+  handler: async (ctx, args): Promise<SendEmailOTPResult> => {
+    try {
+      console.log("Starting sendEmailOTP for clerkId:", args.clerkId);
+
+      // Get user information
+      const user = await ctx.runQuery(api.users.getUserByClerkId, {
+        clerkId: args.clerkId,
+      });
+
+      if (!user) {
+        console.log("User not found for clerkId:", args.clerkId);
+        return {
+          success: false,
+          message: "User not found. Please try logging in again.",
+          details: { error: "user_not_found", clerkId: args.clerkId },
+        };
+      }
+
+      console.log("Found user:", {
+        email: user.email,
+        name: user.fullname,
+        userId: user._id,
+        isEmailVerified: user.isEmailVerified,
+      });
+
+      // Check if email is already verified
+      if (user.isEmailVerified) {
+        console.log("Email already verified for user:", user.email);
+        return {
+          success: true,
+          message: "Your email is already verified.",
+          details: { status: "already_verified" },
+        };
+      }
+
+      let otp;
+      let expiryTime;
+
+      // Check if user already has a valid OTP
+      if (
+        user.emailOTP &&
+        user.otpExpiryTime &&
+        user.otpExpiryTime > Date.now()
+      ) {
+        console.log("User already has a valid OTP, reusing it:", {
+          userId: user._id,
+          email: user.email,
+          otpExists: !!user.emailOTP,
+          expiryTimeValid: user.otpExpiryTime > Date.now(),
+          timeRemaining:
+            Math.floor((user.otpExpiryTime - Date.now()) / 1000) + " seconds",
+        });
+
+        // Use existing OTP if it's still valid (not expired)
+        otp = user.emailOTP;
+        expiryTime = user.otpExpiryTime;
+      } else {
+        // Generate a new OTP if none exists or the existing one is expired
+        otp = generateOTP();
+        console.log("Generated new OTP for user:", {
+          userId: user._id,
+          email: user.email,
+          otp,
+        });
+
+        expiryTime = Date.now() + 10 * 60 * 1000; // 10 minutes expiry
+
+        // Update user with new OTP
+        try {
+          // Update user with new OTP using a mutation
+          await ctx.runMutation(api.users.updateUserOTP, {
+            clerkId: args.clerkId,
+            otp,
+            expiryTime,
+          });
+          console.log("Updated user with OTP and expiry time");
+        } catch (updateError: any) {
+          console.error("Error updating user OTP:", updateError);
+          return {
+            success: false,
+            message: "Failed to generate verification code. Please try again.",
+            details: {
+              error: "update_otp_failed",
+              message: updateError.message,
+            },
+          };
+        }
+      }
+
+      try {
+        // Send OTP via email
+        console.log("Sending OTP email to user:", {
+          email: user.email,
+          name: user.fullname,
+        });
+
+        // Send OTP email directly
+        const BREVO_API_URL = "https://api.sendinblue.com/v3/smtp/email";
+        const FROM_EMAIL = "subacarlo431@gmail.com";
+        const SUPPORT_EMAIL = "subacarlo431@gmail.com";
+        const BREVO_API_KEY = process.env.BREVO_API_KEY;
+
+        if (!BREVO_API_KEY) {
+          console.error("Brevo API key is not configured");
+          throw new Error("Email service is not properly configured. API key missing.");
+        }
+
+        const emailData = {
+          sender: {
+            name: "Ctrlhome Verification",
+            email: FROM_EMAIL,
+          },
+          to: [
+            {
+              email: user.email,
+              name: user.fullname || user.username,
+            },
+          ],
+          subject: "Ctrlhome Verification Code",
+          replyTo: {
+            email: SUPPORT_EMAIL,
+            name: "@Control Home Support",
+          },
+          htmlContent: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
+              <h1 style="color: #4a5568; text-align: center;">Verification Code</h1>
+              <p>Hello ${user.fullname || user.username},</p>
+              <p>Your verification code is:</p>
+              <div style="background-color: #f8f9fa; padding: 15px; text-align: center; font-size: 24px; font-weight: bold; letter-spacing: 5px; margin: 20px 0; border-radius: 5px;">
+                ${otp}
+              </div>
+              <p>This code will expire in 10 minutes.</p>
+              <p>If you didn't request this code, please ignore this email.</p>
+              <p>Thank you,<br>The Control Home Team</p>
+            </div>
+          `,
+        };
+
+        const response = await fetch(BREVO_API_URL, {
+          method: "POST",
+          headers: {
+            Accept: "application/json",
+            "API-Key": BREVO_API_KEY,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(emailData),
+        });
+
+        const responseData = await response.json();
+        const emailResult = {
+          success: response.ok,
+          messageId: responseData.messageId,
+          error: !response.ok ? responseData.message : undefined,
+          details: !response.ok ? responseData : undefined,
+        };
+
+        console.log("Email send result:", emailResult);
+
+        if (!emailResult.success) {
+          console.error("Failed to send OTP email:", emailResult.error);
+
+          // If email sending fails, clear the OTP to prevent issues
+          await ctx.runMutation(api.users.updateUserOTP, {
+            clerkId: args.clerkId,
+            otp: undefined,
+            expiryTime: undefined,
+          });
+
+          return {
+            success: false,
+            message:
+              "Failed to send verification code. Please check your email address and try again.",
+            details: {
+              error: "email_send_failed",
+              emailError: emailResult.error,
+              emailDetails: emailResult.details,
+            },
+          };
+        }
+
+        return {
+          success: true,
+          message:
+            "Verification code sent successfully. Please check your email inbox (including spam folder).",
+          details: { messageId: emailResult.messageId },
+        };
+      } catch (emailError: any) {
+        console.error("Error sending OTP email:", emailError);
+
+        // If email sending fails, clear the OTP to prevent issues
+        await ctx.runMutation(api.users.updateUserOTP, {
+          clerkId: args.clerkId,
+          otp: undefined,
+          expiryTime: undefined,
+        });
+
+        return {
+          success: false,
+          message: "Failed to send verification code. Please try again later.",
+          details: {
+            error: "email_action_failed",
+            message: emailError.message,
+          },
+        };
+      }
+    } catch (error: any) {
+      console.error("Error in sendEmailOTP:", error);
+      return {
+        success: false,
+        message: "Failed to process your request. Please try again.",
+        details: { error: "general_error", message: error.message },
+      };
+    }
+  },
+});
+
+export const updateUserOTP = mutation({
+  args: {
+    clerkId: v.string(),
+    otp: v.optional(v.string()),
+    expiryTime: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_clerkId", (q) => q.eq("clerkId", args.clerkId))
+      .first();
+
+    if (!user) {
+      throw new ConvexError("User not found");
+    }
+
+    await ctx.db.patch(user._id, {
+      emailOTP: args.otp,
+      otpExpiryTime: args.expiryTime,
+    });
+
+    return { success: true };
+  },
+});
+
+export const verifyEmailOTP = mutation({
+  args: {
+    clerkId: v.string(),
+    otp: v.string(),
+  },
+  handler: async (ctx, args) => {
+    console.log("Verifying OTP:", { clerkId: args.clerkId, otp: args.otp });
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_clerkId", (q) => q.eq("clerkId", args.clerkId))
+      .first();
+
+    if (!user) {
+      throw new ConvexError("User not found");
+    }
+
+    if (user.isEmailVerified) {
+      return { success: true, verified: true };
+    }
+
+    if (!user.emailOTP || !user.otpExpiryTime) {
+      console.log("No OTP found for user:", { userId: user._id });
+      throw new ConvexError("No OTP found. Please request a new one.");
+    }
+
+    if (Date.now() > user.otpExpiryTime) {
+      console.log("OTP expired:", {
+        expiryTime: user.otpExpiryTime,
+        currentTime: Date.now(),
+        diff: Date.now() - user.otpExpiryTime,
+      });
+      throw new ConvexError("OTP has expired. Please request a new one.");
+    }
+
+    console.log("Comparing OTPs:", {
+      providedOTP: args.otp,
+      storedOTP: user.emailOTP,
+      match: args.otp === user.emailOTP,
+    });
+    if (args.otp !== user.emailOTP) {
+      throw new ConvexError("Invalid OTP. Please try again.");
+    }
+
+    await ctx.db.patch(user._id, {
+      isEmailVerified: true,
+      emailOTP: undefined,
+      otpExpiryTime: undefined,
+    });
+
+    return { success: true, verified: true };
+  },
+});
+
+export const verifyOTP = mutation({
+  args: {
+    clerkId: v.string(),
+    otp: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_clerkId", (q) => q.eq("clerkId", args.clerkId))
+      .first();
+
+    if (!user) {
+      return {
+        success: false,
+        message: "User not found",
+      };
+    }
+
+    if (!user.emailOTP || !user.otpExpiryTime) {
+      return {
+        success: false,
+        message: "No OTP found. Please request a new one.",
+      };
+    }
+
+    if (Date.now() > user.otpExpiryTime) {
+      return {
+        success: false,
+        message: "OTP has expired. Please request a new one.",
+      };
+    }
+
+    if (args.otp !== user.emailOTP) {
+      return {
+        success: false,
+        message: "Invalid OTP. Please try again.",
+      };
+    }
+
+    // OTP is valid, clear it and mark email as verified
+    await ctx.db.patch(user._id, {
+      isEmailVerified: true,
+      emailOTP: undefined,
+      otpExpiryTime: undefined,
+    });
+
+    return {
+      success: true,
+      message: "Email verified successfully",
+    };
+  },
+});

@@ -58,8 +58,21 @@ const signin = () => {
           if (isSignedIn) {
             // Check if user has completed profile setup
             if (userData !== undefined) {
-              // If user doesn't have a username or profile image, they need to complete setup
-              if (!userData || !userData.username || !userData.image) {
+              // First check if email is verified
+              if (!userData || !userData.isEmailVerified) {
+                console.log("Redirecting to email verification: email not verified")
+                setTimeout(() => {
+                  try {
+                    // Use replace instead of navigate to reset the navigation stack
+                    router.replace("/auth/verify-email")
+                  } catch (navError) {
+                    console.error("Navigation error:", navError)
+                    // Just stay on the current screen if navigation fails
+                  }
+                }, 1000) // Longer delay for better reliability
+              }
+              // Then check if profile is complete (only if email is verified)
+              else if (!userData || !userData.username || !userData.image) {
                 console.log("Redirecting to profile setup: incomplete profile")
                 setTimeout(() => {
                   try {
@@ -71,7 +84,7 @@ const signin = () => {
                   }
                 }, 1000) // Longer delay for better reliability
               } else {
-                // User is already signed in and has completed profile setup, redirect to main screen
+                // User is already signed in, email verified, and has completed profile setup, redirect to main screen
                 console.log("Redirecting to main screen: complete profile")
                 setTimeout(() => {
                   try {
@@ -190,18 +203,18 @@ const signin = () => {
             // Use a longer delay to ensure auth state is fully established
             setTimeout(() => {
               try {
-                console.log("Attempting to navigate to profile setup...")
+                console.log("Attempting to navigate to email verification screen...")
                 // First reset any error state
                 setShowError(false);
 
                 // Use replace instead of navigate to reset the navigation stack
                 // This helps prevent fragment attachment errors
-                router.replace("/auth/profile-setup")
+                router.replace("/auth/verify-email")
               } catch (navError) {
                 console.error("Navigation error:", navError)
                 // Show error screen with white background instead of alert
                 setIsLoading(false)
-                setErrorMessage("Having trouble navigating to the profile setup page. Please tap 'Cancel' to return to the login screen and try again.")
+                setErrorMessage("Having trouble navigating to the verification page. Please tap 'Cancel' to return to the login screen and try again.")
                 setShowError(true)
               }
             }, 3500) // Increased delay to ensure auth state is fully established
@@ -393,7 +406,7 @@ const signin = () => {
           />
         </View>
         <Text style={styles.appName}>Ctrl Home</Text>
-        <Text style={styles.tagline}>Control your home, from anywhere.</Text>
+        <Text style={styles.tagline}>A Smart Home System.</Text>
       </View>
 
       {/* icon-logo */}

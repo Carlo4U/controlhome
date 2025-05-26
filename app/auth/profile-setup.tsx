@@ -45,6 +45,15 @@ export default function ProfileSetup() {
         if (userData !== undefined) {
           console.log("User data loaded:", userData ? "found" : "not found");
 
+          // First check if email is verified
+          if (userData && !userData.isEmailVerified) {
+            console.log("Email not verified, redirecting to verification screen");
+            setTimeout(() => {
+              router.replace('/auth/verify-email');
+            }, 500);
+            return;
+          }
+
           // If user exists and has already set up their profile (has username and image), redirect to main screen
           if (userData && userData.username && userData.image) {
             console.log("Profile complete, redirecting to main screen");

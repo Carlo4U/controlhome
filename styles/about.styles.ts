@@ -33,10 +33,15 @@ export const styles = StyleSheet.create({
       flex: 1,
       padding: 20,
     },
-    logoContainer: {
-      alignItems: 'center',
-      marginVertical: 30,
-    },
+     logoContainer: {
+    width: '100%',
+    alignItems: 'center',
+    marginTop: 1,
+  },
+  logoImage: {
+    width: 80,
+    height: 80,
+  },
     logoText: {
       fontSize: 24,
       fontWeight: 'bold',

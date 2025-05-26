@@ -5,17 +5,18 @@ export const styles = StyleSheet.create({
     container: {
       flex: 1,
       backgroundColor: '#ffffff',
+      
     },
     header: {
       backgroundColor: '#004d40', // Dark green color from the image
       padding: 16,
-      paddingTop: 50,
+      paddingTop: 32,
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      borderBottomLeftRadius: 30,
-      borderBottomRightRadius: 30,
-      height: 100, // Taller header as shown in the image
+      borderBottomLeftRadius: 20,
+      borderBottomRightRadius: 20,
+      height: 155, // Taller header as shown in the image
     },
     headerTitle: {
       color: '#fff',
@@ -171,7 +172,7 @@ export const styles = StyleSheet.create({
     drawerHeader: {
       backgroundColor: '#004d40',
       borderBottomRightRadius: 20,
-      paddingBottom: 15,
+      paddingBottom: 40,
     },
     profileSection: {
       flexDirection: 'row',
@@ -241,11 +242,11 @@ export const styles = StyleSheet.create({
       borderTopColor: '#e0e0e0',
       padding: 20,
       paddingTop: 250,
-      alignItems: 'center',
+      alignItems: 'flex-start',
     },
     logoutButtonStyle: {
       flexDirection: 'row',
-      alignItems: 'center',
+      alignItems: 'flex-start',
     },
     logoutText: {
       fontSize: 16,

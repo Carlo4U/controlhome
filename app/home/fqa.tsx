@@ -113,8 +113,8 @@ export default function FAQ() {
           <Text style={styles.sectionTitle}>Technical Support</Text>
           <Text style={styles.supportText}>
             For technical support, please contact:{'\n'}
-            Email: support@smarthouse.com{'\n'}
-            Phone: +1 (555) 123-4567
+            Email support: ctrlhomecamp01@gmail.com{'\n'}
+            Phone: +63 (916) 444-7869
           </Text>
         </View>
       </ScrollView>
